@@ -72,7 +72,7 @@ def funcc(arg):
         print("Function just worked, code 2")
 
 
-funcc(2)
+funcc(1)
 '''
     a = input()
     if a == "f":

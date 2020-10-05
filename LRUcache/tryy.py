@@ -37,7 +37,7 @@ def min_key(dic):
     return res[0]
 
 
-def calc_cache(key):  # def calc(q, h, key):
+def calc_cache(key):  # КОД К ПРОВЕРКЕ
     global t, h, N
     timing = time.time()
     if key in h.keys():
@@ -45,8 +45,13 @@ def calc_cache(key):  # def calc(q, h, key):
         return h[key]
     result = calc(key)
     if h.__len__() == N:
-        temp = min_key(h)
+        temp = min_key(t)
+        t.pop(temp)
         h.pop(temp)
+
+    t[key] = timing
+    h[key] = result
+    return result
 
 
 check = True

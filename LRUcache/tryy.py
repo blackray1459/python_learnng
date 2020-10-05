@@ -135,8 +135,6 @@ __sizeof__
 __str__
 __subclasshook__
 '''
-for i in range(len(dir(calc))):
-    print(dir(calc)[i])
 
 '''
     a = input()

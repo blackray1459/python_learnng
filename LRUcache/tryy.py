@@ -22,36 +22,30 @@ def calc():
 
 calc()
 '''
-N = 4
-
-
-check = True
-
-
 def obertka(func):
-
-    def wrapper(arg):
+    def wrapper(key):
         print("Start wrap")
-        timing = time.time()
-        res = func(arg)
-        if check:
-            func.tdict[arg] = timing
-            func.hdict[arg] = res
-            print("Timing {} and value {} appended".format(func.tdict[arg], func.hdict[arg]))
-        else:
-            print('Check is False')
+        timing = time.gmtime()
+        func.tdict = tcalc
+        func.hdict = hcalc
+        if key in func.hdict.keys():
+            func.tdict[key] = timing
+            print("Key is in value cache")
+            return func.hdict[key]
+        res = func(key)
+        if func.hdict.__len__() == N:
+            temp = min_key(func.tdict)
+            func.tdict.pop(temp)
+            func.hdict.pop(temp)
+        func.tdict[key] = timing
+        func.hdict[key] = res
+        print("Timing {} and value {} appended\n".format(func.tdict[key], func.hdict[key]))
     return wrapper
 
 
 @obertka
 def calc(inp):
-    calc.tdict = tcalc
-    calc.hdict = hcalc
     return inp*inp
-
-
-tcalc = {}
-hcalc = {}
 
 
 def min_key(dic):
@@ -60,42 +54,21 @@ def min_key(dic):
     return res[0]
 
 
-def calc_cache(key):  # КОД К ПРОВЕРКЕ
-    global t, h, N
-    timing = time.time()
-    if key in h.keys():
-        t[key] = timing
-        return h[key]
-    result = calc(key)
-    if h.__len__() == N:
-        temp = min_key(t)
-        t.pop(temp)
-        h.pop(temp)
-    t[key] = timing
-    h[key] = result
-    return result
-
-
-@obertka
-def funcc(arg):
-    funcc.tdict = tfuncc
-    funcc.hdict = hfuncc
-    return arg+arg
-
-
-tfuncc = {}
-hfuncc = {}
+check = True
+tcalc = {}
+hcalc = {}
+N = 3
 
 
 calc(1)
 calc(2)
+time.sleep(1)
 calc(3)
-funcc(1)
-funcc(2)
-funcc(3)
-print("Time cache for CALC is {},\nValue cache for CALC is {}".format(tcalc, hcalc))
-print()
-print("Time cache for FUNCC is {},\nValue cache for FUNCC is {}".format(tfuncc, hfuncc))
+time.sleep(1)
+calc(5)
+time.sleep(1)
+calc(2)
+print("\nTime cache for CALC is {},\nValue cache for CALC is {}".format(tcalc, hcalc))
 
 '''
 dir(calc)
@@ -135,8 +108,6 @@ __sizeof__
 __str__
 __subclasshook__
 '''
-for i in range(len(dir(calc))):
-    print(dir(calc)[i])
 
 '''
     a = input()

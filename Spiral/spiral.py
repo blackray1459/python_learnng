@@ -6,30 +6,28 @@ def print_matrix(matrix):
 
 
 n = int(input())
-N = 1
+N = 0
 vector = [1, -1]
-res = []
+res = [[0 for k in range(n)] for m in range(n)]
 i = 0
-j = 0
-o = n
-res = [[0 for i in range(n)] for i in range(n)]
+j = -1
 
-for o in range(n-1):
-    res[0][j] = N
-    N += 1
+# ЗАПОЛНЕНИЕ ПЕРВОЙ СТРОКИ МАТРИЦЫ
+for o in range(n):
     j += 1
+    N += 1
+    res[0][j] = N
 n -= 1
 
 while n >= 0:
     for add in vector:
         for o in range(n):
-            res[i][j] = N
             i += add
             N += 1
-        for o in range(n):
             res[i][j] = N
+        for o in range(n):
             j -= add
             N += 1
+            res[i][j] = N
         n -= 1
-res[i][j] = N
 print_matrix(res)

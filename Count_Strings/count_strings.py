@@ -1,23 +1,28 @@
 from collections import defaultdict
 from sortedcontainers import SortedDict
 
+def sort_dict_by_value(d):
+    for key, value in d.items():
 
-d = defaultdict(int)
-length_key = 0
+    return d
+
+
+counter = defaultdict(int)
+max_key_length = 0
 for i in range(15):
     key = str(input()).strip()
-    d[key] += 1
-    if len(key) > length_key:
-        length_key = len(key)
+    counter[key] += 1
+    if len(key) > max_key_length:
+        max_key_length = len(key)
     #(lambda word, d: d[word]+=1)(word,d)
-d = dict(SortedDict(d))
-length_val = 0
-for word in d.values():
-    if len(str(word)) > length_val:
-        length_val = len(str(word))
+d = dict(SortedDict(counter))
+max_val_length = 0
+for word in counter.values():
+    if len(str(word)) > max_val_length:
+        max_val_length = len(str(word))
 
-print("+" + "-" * (2 + length_key) + "+" + "-" * (2 + length_val) + "+")
+print("+" + "-" * (2 + max_key_length) + "+" + "-" * (2 + max_val_length) + "+")
 for key, value in d.items():
-    print("| " + (lambda a: str(a) + " " * (length_key - key.__str__().__len__()))(key) + " | " + (lambda a: " " *
-                                                      (length_val - value.__str__().__len__()) +  str(a))(value) + " |")
-print("+" + "-" * (2 + length_key) + "+" + "-" * (2 + length_val) + "+")
+    print("| " + (lambda a: str(a) + " " * (max_key_length - key.__str__().__len__()))(key) + " | " + (lambda a: " " *
+                                                      (max_val_length - value.__str__().__len__()) +  str(a))(value) + " |")
+print("+" + "-" * (2 + max_key_length) + "+" + "-" * (2 + max_val_length) + "+")

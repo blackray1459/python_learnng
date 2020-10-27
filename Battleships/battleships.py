@@ -11,13 +11,13 @@
 import random
 
 dict_size_name = {4: "Aerocarrier", 3: "Cruiser", 2: "Destroyer", 1: "Boat"}
+letter_to_number = {'A': 0, 'B': 1, 'C': 2, 'D': 3, 'E': 4, 'F': 5, 'G': 6, 'H': 7, 'I': 8, 'J': 9}
+number_to_letter = {0: 'A', 1: 'B', 2: 'C', 3: 'D', 4: 'E', 5: 'F', 6: 'G', 7: 'H', 8: 'I', 9: 'J'}
 
 
 class Ship(object):
     """Class for ships"""
-
-    letter_to_number = {'A': 0, 'B': 1, 'C': 2, 'D': 3, 'E': 4, 'F': 5, 'G': 6, 'H': 7, 'I': 8, 'J': 9}
-    number_to_letter = {0: 'A', 1: 'B', 2: 'C', 3: 'D', 4: 'E', 5: 'F', 6: 'G', 7: 'H', 8: 'I', 9: 'J'}
+    global letter_to_number, number_to_letter
 
     def __init__(self, name=None, size=0, position=(), close_water=()):
         self.name = name
@@ -94,12 +94,13 @@ def random_place_all():
         for l in range(5 - ship_size):
             check_done = False
             while not check_done:
+                cell = []
                 check_place = False
                 while not check_place:
                     i, j = [random.randint(0, 9), random.randint(0, 9)]
                     if shadow_field[i][j] == " ":
                         check_place = True
-                        print("Place found!")
+                        cell += [i, j]
                     else:
                         continue
                     if ship_size != 1:
@@ -110,72 +111,133 @@ def random_place_all():
                                 break
                             direction = random.choice(arr)
                             if direction == "left":
-                                print(direction)
                                 for k in range(ship_size - 1):
-                                    try:
-                                        if shadow_field[i][j - k + 1] != " ":
-                                            arr.remove(direction)
-                                            direction = ""
-                                            continue
-                                    except IndexError:
+                                    if j - (k + 1) < 0:
+                                        print("Got through the border")
                                         arr.remove(direction)
                                         direction = ""
-                                        continue
+                                        break
+                                    elif shadow_field[i][j - (k + 1)] != " ":
+                                        print("Something in the cell")
+                                        arr.remove(direction)
+                                        direction = ""
+                                        break
                                 if direction != "":
                                     check_direction = True
+                                    break
+                                else:
+                                    continue
                             elif direction == "up":
-                                print(direction)
                                 for k in range(ship_size - 1):
-                                    try:
-                                        if shadow_field[i - k + 1][j] != " ":
-                                            arr.remove(direction)
-                                            direction = ""
-                                            continue
-                                    except IndexError:
+                                    if i - (k + 1) < 0:
+                                        print("Got through the border")
                                         arr.remove(direction)
                                         direction = ""
-                                        continue
+                                        break
+                                    elif shadow_field[i - (k + 1)][j] != " ":
+                                        print("Something in the cell")
+                                        arr.remove(direction)
+                                        direction = ""
+                                        break
                                 if direction != "":
                                     check_direction = True
+                                    break
+                                else:
+                                    continue
                             elif direction == "right":
-                                print(direction)
                                 for k in range(ship_size - 1):
                                     try:
-                                        if shadow_field[i][j + k + 1] != " ":
-                                            direction = ""
+                                        if shadow_field[i][j + (k + 1)] != " ":
+                                            print("Something in the cell")
                                             arr.remove(direction)
-                                            continue
+                                            direction = ""
+                                            break
                                     except IndexError:
+                                        print("Got through the border")
                                         arr.remove(direction)
                                         direction = ""
-                                        continue
+                                        break
                                 if direction != "":
                                     check_direction = True
+                                    break
+                                else:
+                                    continue
                             elif direction == "down":
-                                print(direction, arr)
                                 for k in range(ship_size - 1):
                                     try:
-                                        if shadow_field[i + k + 1][j] != " ":
+                                        if shadow_field[i + (k + 1)][j] != " ":
+                                            print("Something in the cell")
                                             arr.remove(direction)
-                                            print("Down is wrong direction")
-                                            continue
+                                            direction = ""
+                                            break
                                     except IndexError:
+                                        print("Got through the border")
                                         arr.remove(direction)
-                                        print("IndexError. Down is wrong direction")
-                                        print(f"Direction is {direction}, arr is {arr}")
-                                        continue
+                                        direction = ""
+                                        break
                                 if direction != "":
                                     check_direction = True
+                                    break
+                                else:
+                                    continue
                     else:
                         check_direction = True
-            if not check_place:
-                print(f"Check of position is {check_place}")
-            if not check_direction:
-                print(f"Check of direction is {check_direction}")
-            if check_direction and check_place:
-                check_done = True
-            print(check_done)
-        print(f"SHIP PLACED! SHIP {ship_name} size {ship_size}")
+                    check_done = check_direction and check_place
+            print(f"Cell is [{i}][{j}]. Direction is {direction}")
+            print(f"SHIP PLACED! SHIP {ship_name} SIZE {ship_size}")
+            place_ship(cell, direction, ship_size)
+
+
+def place_ship(cell, direction, size):
+    global shadow_field
+    around = [-1, 0, 1]
+    i, j = cell
+    for m in range(size):
+        if direction == "down":
+            shadow_field[i + m][j] = "◙"
+            try:
+                for k in around:
+                    for l in around:
+                        if (i + m + k < 0) or (j + l < 0):
+                            continue
+                        elif shadow_field[i + m + k][j + l] != "◙":
+                            shadow_field[i + m + k][j + l] = "+"
+            except IndexError:
+                continue
+        elif direction == "right":
+            shadow_field[i][j + m] = "◙"
+            try:
+                for k in around:
+                    for l in around:
+                        if (i + k < 0) or (j + m + l < 0):
+                            continue
+                        elif shadow_field[i + k][j + m + l] != "◙":
+                            shadow_field[i + k][j + m + l] = "+"
+            except IndexError:
+                continue
+        elif direction == "up":
+            shadow_field[i - m][j] = "◙"
+            try:
+                for k in around:
+                    for l in around:
+                        if (i - m + k < 0) or (j + l < 0):
+                            continue
+                        elif shadow_field[i - m + k][j + l] != "◙":
+                            shadow_field[i - m + k][j + l] = "+"
+            except IndexError:
+                continue
+        elif direction == "left":
+            shadow_field[i][j - m] = "◙"
+            try:
+                for k in around:
+                    for l in around:
+                        if (j - m + l < 0) or (i + k < 0):
+                            continue
+                        elif shadow_field[i + k][j - m + l] != "◙":
+                            shadow_field[i + k][j - m + l] = "+"
+            except IndexError:
+                continue
+    show_field("shadow_field")
 
 
 shadow_field = [[" "] * 10 for i in range(10)]

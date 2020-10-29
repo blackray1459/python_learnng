@@ -7,7 +7,7 @@
 # «двухпалубные» эсминцы - Destroyer
 # «однопалубные» торпедные катера - Boat
 #
-# обозначение палубы ◙
+# обозначение палубы ◙, воды рядом +, попадания ●
 import random
 
 dict_size_name = {4: "Aerocarrier", 3: "Cruiser", 2: "Destroyer", 1: "Boat"}
@@ -113,12 +113,12 @@ def random_place_all():
                             if direction == "left":
                                 for k in range(ship_size - 1):
                                     if j - (k + 1) < 0:
-                                        print("Got through the border")
+                                        # print("Got through the border")
                                         arr.remove(direction)
                                         direction = ""
                                         break
                                     elif shadow_field[i][j - (k + 1)] != " ":
-                                        print("Something in the cell")
+                                        # print("Something in the cell")
                                         arr.remove(direction)
                                         direction = ""
                                         break
@@ -130,12 +130,12 @@ def random_place_all():
                             elif direction == "up":
                                 for k in range(ship_size - 1):
                                     if i - (k + 1) < 0:
-                                        print("Got through the border")
+                                        # print("Got through the border")
                                         arr.remove(direction)
                                         direction = ""
                                         break
                                     elif shadow_field[i - (k + 1)][j] != " ":
-                                        print("Something in the cell")
+                                        # print("Something in the cell")
                                         arr.remove(direction)
                                         direction = ""
                                         break
@@ -148,12 +148,12 @@ def random_place_all():
                                 for k in range(ship_size - 1):
                                     try:
                                         if shadow_field[i][j + (k + 1)] != " ":
-                                            print("Something in the cell")
+                                            # print("Something in the cell")
                                             arr.remove(direction)
                                             direction = ""
                                             break
                                     except IndexError:
-                                        print("Got through the border")
+                                        # print("Got through the border")
                                         arr.remove(direction)
                                         direction = ""
                                         break
@@ -166,12 +166,12 @@ def random_place_all():
                                 for k in range(ship_size - 1):
                                     try:
                                         if shadow_field[i + (k + 1)][j] != " ":
-                                            print("Something in the cell")
+                                            # print("Something in the cell")
                                             arr.remove(direction)
                                             direction = ""
                                             break
                                     except IndexError:
-                                        print("Got through the border")
+                                        # print("Got through the border")
                                         arr.remove(direction)
                                         direction = ""
                                         break
@@ -183,9 +183,8 @@ def random_place_all():
                     else:
                         check_direction = True
                     check_done = check_direction and check_place
-            print(f"Cell is [{i}][{j}]. Direction is {direction}")
-            print(f"SHIP PLACED! SHIP {ship_name} SIZE {ship_size}")
             place_ship(cell, direction, ship_size)
+    print("All ships are in position!")
 
 
 def place_ship(cell, direction, size):
@@ -197,53 +196,95 @@ def place_ship(cell, direction, size):
             shadow_field[i + m][j] = "◙"
             try:
                 for k in around:
-                    for l in around:
-                        if (i + m + k < 0) or (j + l < 0):
+                    for n in around:
+                        if (i + m + k < 0) or (j + n < 0):
                             continue
-                        elif shadow_field[i + m + k][j + l] != "◙":
-                            shadow_field[i + m + k][j + l] = "+"
+                        elif shadow_field[i + m + k][j + n] != "◙":
+                            shadow_field[i + m + k][j + n] = "+"
             except IndexError:
                 continue
         elif direction == "right":
             shadow_field[i][j + m] = "◙"
             try:
                 for k in around:
-                    for l in around:
-                        if (i + k < 0) or (j + m + l < 0):
+                    for n in around:
+                        if (i + k < 0) or (j + m + n < 0):
                             continue
-                        elif shadow_field[i + k][j + m + l] != "◙":
-                            shadow_field[i + k][j + m + l] = "+"
+                        elif shadow_field[i + k][j + m + n] != "◙":
+                            shadow_field[i + k][j + m + n] = "+"
             except IndexError:
                 continue
         elif direction == "up":
             shadow_field[i - m][j] = "◙"
             try:
                 for k in around:
-                    for l in around:
-                        if (i - m + k < 0) or (j + l < 0):
+                    for n in around:
+                        if (i - m + k < 0) or (j + n < 0):
                             continue
-                        elif shadow_field[i - m + k][j + l] != "◙":
-                            shadow_field[i - m + k][j + l] = "+"
+                        elif shadow_field[i - m + k][j + n] != "◙":
+                            shadow_field[i - m + k][j + n] = "+"
             except IndexError:
                 continue
         elif direction == "left":
             shadow_field[i][j - m] = "◙"
             try:
                 for k in around:
-                    for l in around:
-                        if (j - m + l < 0) or (i + k < 0):
+                    for n in around:
+                        if (j - m + n < 0) or (i + k < 0):
                             continue
-                        elif shadow_field[i + k][j - m + l] != "◙":
-                            shadow_field[i + k][j - m + l] = "+"
+                        elif shadow_field[i + k][j - m + n] != "◙":
+                            shadow_field[i + k][j - m + n] = "+"
             except IndexError:
                 continue
-    show_field("shadow_field")
+    # show_field("shadow_field")
+
+
+def shot(i, j):  # РЕГИСТРАЦИЯ ВЫСТРЕЛА И ПРОВЕРКА НА УБИЙСТВО
+    global shadow_field, battle_field
+    if shadow_field[i][j] == " " or shadow_field[i][j] == "+":
+        battle_field[i][j] = "●"
+        show_field()
+    elif shadow_field[i][j] == "◙":
+        battle_field[i][j] = "X"
+
+
+
 
 
 shadow_field = [[" "] * 10 for i in range(10)]
 battle_field = [[" "] * 10 for i in range(10)]
+print(number_to_letter.keys())
 
 random_place_all()
+turn = ""
+while turn != "stop":
+    turn = input("\nEnter the cell you want to shoot: ")
+    try:
+        if turn == "":
+            print("Cell is not chosen.")
+            continue
+        elif (type(turn) is str) and len(turn) == 2 and turn[0].isalpha() and turn[1].isdigit():
+            if turn[0].upper() not in letter_to_number.keys():
+                print("Vvedi normalnuiy bukvu! A B C D E F G H I J. Vybirai!")
+                continue
+            if int(turn[1]) not in number_to_letter.keys():
+                print("Cifry ot 0 do 9, blin! I bez zapyatyh!")
+                continue
+            print("Normalno vvel")
+            i = int(turn[1])-1
+            j = letter_to_number[turn[0].upper()]
+            # РЕГИСТРАЦИЯ ВЫСТРЕЛА И ПРОВЕРКА НА УБИЙСТВО
+            print(i, j)
+            shadow_field[i][j] = "#"
+            show_field("shadow_field")
+            continue
+        else:
+            print("Nichego ne ponyal. Vvod takoi: A4, B7. Bukva i cifra. Davai po novoi, Misha!")
+            continue
+
+    except TypeError:
+        print("Wrong input. Vvodi kak nado.")
+        continue
 '''
 show_field(shadow_field)
 print()

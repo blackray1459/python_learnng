@@ -1,10 +1,11 @@
 # РЕАЛИЗАЦИЯ ИГРЫ "МОРСКОЙ БОЙ"
 
 import random
+import re
 from enum import Enum
 
 
-class Ship(object):
+class Ship(object):  # 57 строк
     """Class for ships"""
     global letter_to_number, number_to_letter
 
@@ -60,7 +61,7 @@ class Ship(object):
         """Print current position of ship"""
         for digit, letter in self.position:
             print(letter, digit + 1)
-        return
+        return # #  #
 
 
 class Marks(Enum):
@@ -79,30 +80,26 @@ def to_number(letter):
     return ord(letter) - 65
 
 
-def init_field(field):
-    field = [[Marks.EMPTY] * 10 for i in range(10)]
-    return
-
-
 def print_field(admin=False):
-    print('   ABCDEFGHIJ')
+    print('   A B C D E F G H I J')
     for i, line in enumerate(field):
-        print(i + 1, " " * (3 - len(str(i + 1))), end="", sep="")
+        print(f"{i+1:2} ", end="")
         for cell in line:
             if cell == Marks.NEARBY and admin:
-                print("+", end="")
+                print("+", end=" ")
             elif cell == Marks.BOARD and admin:
-                print("◙", end="")
+                print("◙", end=" ")
             elif cell == Marks.WATER:
-                print("●", end="")
+                print("●", end=" ")
             elif cell == Marks.SHOT:
-                print("X", end="")
+                print("X", end=" ")
             else:
-                print(" ", end="")
+                print(" ", end=" ")
         print()
 
 
 def generate_ships():
+    field = [[Marks.EMPTY] * 10 for i in range(10)]
     for ship_size in range(4):
         ship_size += 1
         for i in range(5 - ship_size):
@@ -144,11 +141,12 @@ def generate_ships():
                     check_direction = True
                     row_delta, column_delta = 0, 0
                 check_done = check_place and check_direction
-            place_ship(cell, row_delta, column_delta, ship_size)
+            place_ship(field, cell, row_delta, column_delta, ship_size)
     print("Корабли размещены. К бою!")
+    return field
 
 
-def place_ship(cell, row_delta, column_delta, size):
+def place_ship(field, cell, row_delta, column_delta, size):
     around = [-1, 0, 1]
     row, column = cell
     for counter in range(size):
@@ -157,7 +155,7 @@ def place_ship(cell, row_delta, column_delta, size):
             for n in around:
                 if row + k not in range(10) or column + n not in range(10):
                     continue
-                elif field[row + k][column + n] != (Marks.BOARD or Marks.NEARBY):
+                elif field[row + k][column + n] not in (Marks.BOARD, Marks.NEARBY):
                     field[row + k][column + n] = Marks.NEARBY
         row += row_delta
         column += column_delta
@@ -170,13 +168,16 @@ def shot(row, column):  # РЕГИСТРАЦИЯ ВЫСТРЕЛА И ПРОВЕ�
         field[row][column] = Marks.WATER
         print("МИМО!")
         return
-    elif field[row][column] == Marks.WATER:
+
+    if field[row][column] == Marks.WATER:
         print("Ты сюда стрелял. Тут ●")
         return
-    elif field[row][column] == Marks.SHOT:
+
+    if field[row][column] == Marks.SHOT:
         print("Ты сюда стрелял. Тут Х")
         return
-    elif field[row][column] == Marks.BOARD:
+
+    if field[row][column] == Marks.BOARD:
         field[row][column] = Marks.SHOT
         check_dead = False
         count_directions = 0
@@ -185,26 +186,27 @@ def shot(row, column):  # РЕГИСТРАЦИЯ ВЫСТРЕЛА И ПРОВЕ�
                 temp_row = row
                 temp_column = column
                 while True:
-                    if 0 <= temp_row <= 9 and 0 <= temp_column <= 9:
-                        if field[temp_row][temp_column] == Marks.BOARD:
-                            print("РАНИЛ!")
-                            return
-                        elif check_dead and field[temp_row][temp_column] == Marks.SHOT:
-                            for p in around:
-                                for r in around:
-                                    if (temp_row + p and temp_column + r < 0) or (temp_row + p and temp_column + r > 9):
-                                        continue
-                                    elif field[temp_row + p][temp_column + r] == Marks.NEARBY:
-                                        field[temp_row + p][temp_column + r] = Marks.WATER
-                            temp_row += vertical_delta
-                            temp_column += horizontal_delta
-                        elif field[temp_row][temp_column] == (Marks.NEARBY or Marks.WATER):
-                            break
-                        else:
-                            temp_row += vertical_delta
-                            temp_column += horizontal_delta
-                    else:
+                    if temp_row not in range(10) or temp_column not in range(10):
                         break
+
+                    if field[temp_row][temp_column] == Marks.BOARD:
+                        print("РАНИЛ!")
+                        return
+
+                    if field[temp_row][temp_column] in (Marks.NEARBY, Marks.WATER):
+                        break
+
+                    if check_dead and field[temp_row][temp_column] == Marks.SHOT:
+                        for p in around:
+                            for r in around:
+                                if (temp_row + p not in range(10)) or (temp_column + r not in range(10)):
+                                    continue
+                                elif field[temp_row + p][temp_column + r] == Marks.NEARBY:
+                                    field[temp_row + p][temp_column + r] = Marks.WATER
+
+                    temp_row += vertical_delta
+                    temp_column += horizontal_delta
+
                 if check_dead:
                     count_directions += 1
             if count_directions == 4:
@@ -213,24 +215,31 @@ def shot(row, column):  # РЕГИСТРАЦИЯ ВЫСТРЕЛА И ПРОВЕ�
             check_dead = True
 
 
-field = [[Marks.EMPTY] * 10 for i in range(10)]
-generate_ships()
+field = generate_ships()
 turn = ""
 
-while turn != "stop":
+while True:
     win = True
     turn = input("\nВведи клетку, по которой будешь стрелять: ")
     print()
+
+    if turn == "stop":
+        print("Выход. До скорой встречи!")
+        break
+
     if turn == "":
         print("Клетка не выбрана.")
         continue
-    elif turn == "show":
+
+    if turn == "show":
         print_field(admin=True)
-    elif (len(turn) == 2 or len(turn) == 3) and turn[0].isalpha() and turn[1:].isdigit():
+        continue
+
+    if re.match(r"\w\d", turn) or re.match(r"\w\d\d", turn):
         if to_number(turn[0].upper()) not in range(0, 10):
             print("Введи нормальную букву! A B C D E F G H I J. Выбирай!")
             continue
-        if not 0 < int(turn[1:]) < 11:
+        if int(turn[1:]) not in range(1, 12):
             print("Цифры от 1 до 10! Без запятых!")
             continue
         row = int(turn[1:]) - 1

@@ -1,19 +1,7 @@
-# Press Shift+F10 to execute it or replace it with your code.
-# Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
-#
-# a[i][j] - i = НОМЕР СТРОКИ, j = НОМЕР СТОЛБЦА
-# «четрыехпалубные» авианосцы - Aerocarrier
-# «трехпалубные» крейсера - Cruiser
-# «двухпалубные» эсминцы - Destroyer
-# «однопалубные» торпедные катера - Boat
-#
-# обозначение палубы ◙, воды рядом +, попадания ●
+# РЕАЛИЗАЦИЯ ИГРЫ "МОРСКОЙ БОЙ"
+
 import random
 from enum import Enum
-
-dict_size_name = {4: "Aerocarrier", 3: "Cruiser", 2: "Destroyer", 1: "Boat"}
-letter_to_number = {'A': 0, 'B': 1, 'C': 2, 'D': 3, 'E': 4, 'F': 5, 'G': 6, 'H': 7, 'I': 8, 'J': 9}
-number_to_letter = {0: 'A', 1: 'B', 2: 'C', 3: 'D', 4: 'E', 5: 'F', 6: 'G', 7: 'H', 8: 'I', 9: 'J'}
 
 
 class Ship(object):
@@ -83,12 +71,23 @@ class Marks(Enum):
     SHOT = 5
 
 
+def to_letter(number):
+    return chr(number + 65)
+
+
+def to_number(letter):
+    return ord(letter) - 65
+
+
+def init_field(field):
+    field = [[Marks.EMPTY] * 10 for i in range(10)]
+    return
+
+
 def print_field(admin=False):
-    i = 0
     print('   ABCDEFGHIJ')
-    for line in field:
-        i += 1
-        print(i, " " * (3 - len(str(i))), end="", sep="")
+    for i, line in enumerate(field):
+        print(i + 1, " " * (3 - len(str(i + 1))), end="", sep="")
         for cell in line:
             if cell == Marks.NEARBY and admin:
                 print("+", end="")
@@ -104,7 +103,8 @@ def print_field(admin=False):
 
 
 def generate_ships():
-    for ship_size, ship_name in dict_size_name.items():
+    for ship_size in range(4):
+        ship_size += 1
         for i in range(5 - ship_size):
             check_done = False
             while not check_done:
@@ -117,88 +117,50 @@ def generate_ships():
                         cell += [row, column]
                     else:
                         continue
-                    if ship_size != 1:
-                        check_direction = False
-                        arr = ["left", "up", "right", "down"]
-                        while not check_direction:
-                            if not arr:
+                if ship_size != 1:
+                    check_direction = False
+                    delta_row_column = [[0, -1], [-1, 0], [0, 1], [1, 0]]  # "left","up","right","down"
+                    while not check_direction:
+                        if not delta_row_column:
+                            break
+                        row_delta, column_delta = random.choice(delta_row_column)
+                        temp_row = row
+                        temp_column = column
+                        for counter in range(ship_size - 1):
+                            temp_row += row_delta
+                            temp_column += column_delta
+                            if (temp_row not in range(10) or temp_column not in range(10)) or field[temp_row][\
+                                    temp_column] != \
+                                    Marks.EMPTY:
+                                delta_row_column.remove([row_delta, column_delta])
+                                row_delta = None
                                 break
-                            direction = random.choice(arr)
-                            if direction == "left":
-                                for delta in range(ship_size - 1):
-                                    if column - (delta + 1) < 0 or field[row][column - (delta + 1)] != Marks.EMPTY:
-                                        arr.remove(direction)
-                                        direction = ""
-                                        break
-                                if direction != "":
-                                    check_direction = True
-                            elif direction == "up":
-                                for delta in range(ship_size - 1):
-                                    if row - (delta + 1) < 0 or field[row - (delta + 1)][column] != Marks.EMPTY:
-                                        arr.remove(direction)
-                                        direction = ""
-                                        break
-                                if direction != "":
-                                    check_direction = True
-                            elif direction == "right":
-                                for delta in range(ship_size - 1):
-                                    if column + (delta + 1) > 9 or field[row][column + (delta + 1)] != Marks.EMPTY:
-                                        arr.remove(direction)
-                                        direction = ""
-                                        break
-                                if direction != "":
-                                    check_direction = True
-                            elif direction == "down":
-                                for delta in range(ship_size - 1):
-                                    if row + (delta + 1) > 9 or field[row + (delta + 1)][column] != Marks.EMPTY:
-                                        arr.remove(direction)
-                                        direction = ""
-                                        break
-                                if direction != "":
-                                    check_direction = True
-                    else:
-                        check_direction = True
-                check_done = check_direction and check_place
-            place_ship(cell, direction, ship_size)
-    print("All ships are in position!")
+                        if row_delta is not None:
+                            check_direction = True
+                            break
+                        else:
+                            continue
+                else:
+                    check_direction = True
+                    row_delta, column_delta = 0, 0
+                check_done = check_place and check_direction
+            place_ship(cell, row_delta, column_delta, ship_size)
+    print("Корабли размещены. К бою!")
 
 
-def place_ship(cell, direction, size):
+def place_ship(cell, row_delta, column_delta, size):
     around = [-1, 0, 1]
     row, column = cell
-    for m in range(size):
-        if direction == "down":
-            field[row + m][column] = Marks.BOARD
-            for k in around:
-                for n in around:
-                    if (row + m + k < 0) or (column + n < 0) or (row + m + k > 9) or (column + n > 9):
-                        continue
-                    elif field[row + m + k][column + n] != Marks.BOARD:
-                        field[row + m + k][column + n] = Marks.NEARBY
-        elif direction == "right":
-            field[row][column + m] = Marks.BOARD
-            for k in around:
-                for n in around:
-                    if (row + k < 0) or (column + m + n < 0) or (row + k > 9) or (column + m + n > 9):
-                        continue
-                    elif field[row + k][column + m + n] != Marks.BOARD:
-                        field[row + k][column + m + n] = Marks.NEARBY
-        elif direction == "up":
-            field[row - m][column] = Marks.BOARD
-            for k in around:
-                for n in around:
-                    if (row - m + k < 0) or (column + n < 0) or (row - m + k > 9) or (column + n > 9):
-                        continue
-                    elif field[row - m + k][column + n] != Marks.BOARD:
-                        field[row - m + k][column + n] = Marks.NEARBY
-        elif direction == "left":
-            field[row][column - m] = Marks.BOARD
-            for k in around:
-                for n in around:
-                    if (column - m + n < 0) or (row + k < 0) or (column - m + n > 9) or (row + k > 9):
-                        continue
-                    elif field[row + k][column - m + n] != Marks.BOARD:
-                        field[row + k][column - m + n] = Marks.NEARBY
+    for counter in range(size):
+        field[row][column] = Marks.BOARD
+        for k in around:
+            for n in around:
+                if row + k not in range(10) or column + n not in range(10):
+                    continue
+                elif field[row + k][column + n] != (Marks.BOARD or Marks.NEARBY):
+                    field[row + k][column + n] = Marks.NEARBY
+        row += row_delta
+        column += column_delta
 
 
 def shot(row, column):  # РЕГИСТРАЦИЯ ВЫСТРЕЛА И ПРОВЕРКА НА УБИЙСТВО
@@ -207,7 +169,6 @@ def shot(row, column):  # РЕГИСТРАЦИЯ ВЫСТРЕЛА И ПРОВЕ�
     if field[row][column] == Marks.EMPTY or field[row][column] == Marks.NEARBY:
         field[row][column] = Marks.WATER
         print("МИМО!")
-        print_field()
         return
     elif field[row][column] == Marks.WATER:
         print("Ты сюда стрелял. Тут ●")
@@ -217,42 +178,39 @@ def shot(row, column):  # РЕГИСТРАЦИЯ ВЫСТРЕЛА И ПРОВЕ�
         return
     elif field[row][column] == Marks.BOARD:
         field[row][column] = Marks.SHOT
-        for vertical_delta, horizontal_delta in direction_delta:
-            temp_row = row + vertical_delta
-            temp_column = column + horizontal_delta
-            while True:
-                if 0 <= (temp_row) <= 9 and 0 <= (temp_column) <= 9:
-                    if field[temp_row][temp_column] == Marks.BOARD:
-                        print("РАНИЛ!")
-                        print_field()
-                        return
-                    elif field[temp_row][temp_column] == Marks.NEARBY or field[temp_row][temp_column] == Marks.WATER:
-                        break
+        check_dead = False
+        count_directions = 0
+        while True:
+            for vertical_delta, horizontal_delta in direction_delta:
+                temp_row = row
+                temp_column = column
+                while True:
+                    if 0 <= temp_row <= 9 and 0 <= temp_column <= 9:
+                        if field[temp_row][temp_column] == Marks.BOARD:
+                            print("РАНИЛ!")
+                            return
+                        elif check_dead and field[temp_row][temp_column] == Marks.SHOT:
+                            for p in around:
+                                for r in around:
+                                    if (temp_row + p and temp_column + r < 0) or (temp_row + p and temp_column + r > 9):
+                                        continue
+                                    elif field[temp_row + p][temp_column + r] == Marks.NEARBY:
+                                        field[temp_row + p][temp_column + r] = Marks.WATER
+                            temp_row += vertical_delta
+                            temp_column += horizontal_delta
+                        elif field[temp_row][temp_column] == (Marks.NEARBY or Marks.WATER):
+                            break
+                        else:
+                            temp_row += vertical_delta
+                            temp_column += horizontal_delta
                     else:
-                        temp_row += vertical_delta
-                        temp_column += horizontal_delta
-                else:
-                    break
-        #  ЕСЛИ НЕ НАШЛОСЬ ЗДОРОВОЙ ПАЛУБЫ
-        for vertical_delta, horizontal_delta in direction_delta:
-            temp_row = row
-            temp_column = column
-            while True:
-                if temp_row < 0 or temp_column < 0 or temp_row > 9 or temp_column > 9:
-                    break
-                elif field[temp_row][temp_column] == Marks.SHOT:
-                    for p in around:
-                        for r in around:
-                            if (temp_row + p < 0) or (temp_column + r < 0) or (temp_row + p > 9) or (temp_column + r > 9):
-                                continue
-                            elif field[temp_row + p][temp_column + r] == Marks.NEARBY:
-                                field[temp_row + p][temp_column + r] = Marks.WATER
-                    temp_row += vertical_delta
-                    temp_column += horizontal_delta
-                elif field[temp_row][temp_column] == Marks.NEARBY or field[temp_row][temp_column] == Marks.WATER:
-                    break
-        print("ПОТОПИЛ!")
-        print_field()
+                        break
+                if check_dead:
+                    count_directions += 1
+            if count_directions == 4:
+                print("ПОТОПИЛ!")
+                return
+            check_dead = True
 
 
 field = [[Marks.EMPTY] * 10 for i in range(10)]
@@ -267,18 +225,18 @@ while turn != "stop":
         print("Клетка не выбрана.")
         continue
     elif turn == "show":
-        print_field()
         print_field(admin=True)
-    elif (type(turn) is str) and (len(turn) == 2 or len(turn) == 3) and turn[0].isalpha() and turn[1:].isdigit():
-        if turn[0].upper() not in letter_to_number.keys():
+    elif (len(turn) == 2 or len(turn) == 3) and turn[0].isalpha() and turn[1:].isdigit():
+        if to_number(turn[0].upper()) not in range(0, 10):
             print("Введи нормальную букву! A B C D E F G H I J. Выбирай!")
             continue
         if not 0 < int(turn[1:]) < 11:
             print("Цифры от 1 до 10! Без запятых!")
             continue
         row = int(turn[1:]) - 1
-        column = letter_to_number[turn[0].upper()]
+        column = to_number(turn[0].upper())
         shot(row, column)
+        print_field()
     else:
         print("Ничего не понял. Примеры ввода: A4, B7. Буква и цифра. Давай по новой, Миша!")
         continue

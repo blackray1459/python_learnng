@@ -146,7 +146,7 @@ def generate_ships():
     return field
 
 
-def place_ship(field, cell, row_delta, column_delta, size):
+def place_ship(field, cell, row_delta, column_delta, size, *direction):
     around = [-1, 0, 1]
     row, column = cell
     for counter in range(size):
@@ -164,7 +164,7 @@ def place_ship(field, cell, row_delta, column_delta, size):
 def shot(row, column):  # РЕГИСТРАЦИЯ ВЫСТРЕЛА И ПРОВЕРКА НА УБИЙСТВО
     around = [-1, 0, 1]
     direction_delta = [[-1, 0], [1, 0], [0, -1], [0, 1]]  # ВВЕРХ, ВНИЗ, ВЛЕВО, ВПРАВО
-    if field[row][column] == Marks.EMPTY or field[row][column] == Marks.NEARBY:
+    if field[row][column] in (Marks.EMPTY, Marks.NEARBY):
         field[row][column] = Marks.WATER
         print("МИМО!")
         return
@@ -216,7 +216,6 @@ def shot(row, column):  # РЕГИСТРАЦИЯ ВЫСТРЕЛА И ПРОВЕ�
 
 
 field = generate_ships()
-turn = ""
 
 while True:
     win = True
@@ -239,7 +238,7 @@ while True:
         if to_number(turn[0].upper()) not in range(0, 10):
             print("Введи нормальную букву! A B C D E F G H I J. Выбирай!")
             continue
-        if int(turn[1:]) not in range(1, 12):
+        if int(turn[1:]) not in range(1, 11):
             print("Цифры от 1 до 10! Без запятых!")
             continue
         row = int(turn[1:]) - 1
@@ -249,10 +248,12 @@ while True:
     else:
         print("Ничего не понял. Примеры ввода: A4, B7. Буква и цифра. Давай по новой, Миша!")
         continue
+
     for line in field:
         if Marks.BOARD in line:
             win = False
             break
+
     if win:
         print("Победа! Весь флот уничтожен!")
         break

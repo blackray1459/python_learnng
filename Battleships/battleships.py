@@ -170,7 +170,7 @@ print("Для вызова помощи введи \"help\".")
 print("Изпользуй латинские буквы для ввода. Приятной игры!")
 
 field_size = 10
-field = init_field()
+field = init_field(field_size)
 generate_ships()
 win = False
 
@@ -189,7 +189,7 @@ while True:
                 print("Введи число от 10 до 99")
                 continue
             field_size = int(field_size)
-            field = init_field()
+            field = init_field(field_size)
             generate_ships()
             break
         continue

@@ -30,7 +30,7 @@ def print_help():
     print("\t[0-9][A-J] - выстрел")
 
 
-def init_field():
+def init_field(field_size):
     return [[Marks.EMPTY]*field_size for _ in range(field_size)]
 
 

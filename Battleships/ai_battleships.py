@@ -31,7 +31,7 @@ def print_help():
 
 
 def init_field(field_size=10):
-    return [[Marks.EMPTY]*field_size for _ in range(field_size)]
+    return [[Marks.EMPTY] * field_size for _ in range(field_size)]
 
 
 def print_field(field):
@@ -54,7 +54,7 @@ def generate_ships(field):
             while not check_done:
                 check_place = False
                 while not check_place:
-                    row_index, column_index = [random.randint(0, field_size-1), random.randint(0, field_size-1)]
+                    row_index, column_index = [random.randint(0, field_size - 1), random.randint(0, field_size - 1)]
                     if field[row_index][column_index] == Marks.EMPTY:
                         check_place = True
                     else:
@@ -71,7 +71,7 @@ def generate_ships(field):
                         for counter in range(ship_size - 1):
                             temp_row += row_delta
                             temp_column += column_delta
-                            if (temp_row not in range(field_size-1) or temp_column not in range(field_size-1)) or \
+                            if (temp_row not in range(field_size - 1) or temp_column not in range(field_size - 1)) or \
                                     field[temp_row][temp_column] != Marks.EMPTY:
                                 delta_row_column.remove([row_delta, column_delta])
                                 row_delta = None
@@ -126,12 +126,12 @@ def is_destroyed(field, row_index, column_index, check_dead=False):
                     break
 
                 if field[temp_row_index][temp_column_index] == Marks.BOARD:
-                    return False # РАНИЛ!
+                    return False  # РАНИЛ!
 
                 temp_row_index += vertical_delta
                 temp_column_index += horizontal_delta
         break
-    return True # ПОТОПИЛ!
+    return True  # ПОТОПИЛ!
 
 
 def destroyed(field, row_index, column_index):
@@ -155,57 +155,15 @@ def destroyed(field, row_index, column_index):
         if count_directions == 4:
             return
 
+
 def put_mark(field, row_index, column_index, response):
-    if response in [Marks.BOARD, Marks.SHOT]:
+    if response == Marks.BOARD:
         field[row_index][column_index] = Marks.SHOT
-        if is_destroyed(field, row_index, column_index):
-            destroyed(field, row_index, column_index)
-            return "ПОТОПИЛ!"
-        else:
-            return "РАНИЛ!"
+    elif response == Marks.SHOT:
+        field[row_index][column_index] = Marks.SHOT
+        destroyed(field, row_index, column_index)
     else:
         field[row_index][column_index] = Marks.WATER
-        return "МИМО!"
-
-
-"""def board(field, row_index, column_index, response=None):
-    field[row_index][column_index] = Marks.SHOT
-    if response == "DESTROYED":
-        check_dead = True
-    else:
-        check_dead = False
-    count_directions = 0
-    while True:
-        for vertical_delta, horizontal_delta in direction_delta:
-            temp_row_index = row_index
-            temp_column_index = column_index
-            while True:
-                if temp_row_index not in range(field_size) or temp_column_index not in range(field_size):
-                    break
-
-                if field[temp_row_index][temp_column_index] == Marks.BOARD:
-                    if response is None:
-                        print("РАНИЛ!")
-                    return Marks.BOARD
-
-                if field[temp_row_index][temp_column_index] in [Marks.NEARBY, Marks.WATER]:
-                    break
-
-                if check_dead and field[temp_row_index][temp_column_index] == Marks.SHOT:
-                    surround(field, temp_row_index, temp_column_index, field[temp_row_index][temp_column_index])
-
-                temp_row_index += vertical_delta
-                temp_column_index += horizontal_delta
-
-            if check_dead:
-                count_directions += 1
-        if count_directions == 4:
-            if response is None:
-                print("ПОТОПИЛ!")
-                return Marks.SHOT
-            return
-        check_dead = True
-"""
 
 
 def shot(field, row_index, column_index):  # РЕГИСТРАЦИЯ ВЫСТРЕЛА И ПРОВЕРКА НА УБИЙСТВО
@@ -217,7 +175,7 @@ def shot(field, row_index, column_index):  # РЕГИСТРАЦИЯ ВЫСТРЕ
     if field[row_index][column_index] in [Marks.WATER, Marks.SHOT]:
         line = f"Ты сюда стрелял. Тут {str(field[row_index][column_index])}"
         line = line.replace(str(Marks.WATER), "●").replace(str(Marks.SHOT), "X")
-        print(line)
+        # print(line)
         return
 
     if field[row_index][column_index] == Marks.BOARD:
@@ -225,21 +183,51 @@ def shot(field, row_index, column_index):  # РЕГИСТРАЦИЯ ВЫСТРЕ
         return Marks.BOARD
 
 
-def my_choice(field, shot_cell, destroying_row, destroying_col, response):
+def my_choice(
+        field,
+        shot_cell, destroying_row, destroying_col, vert_or_horiz, direction_number,
+        response
+):
     if response == Marks.EMPTY:
         if shot_cell:
-    if destroying_row:
-        if shot_cell:
-
+            if destroying_row:
+                destroying_row = numerated_directions[vert_or_horiz][direction_number - 1][0]
+                destroying_col = numerated_directions[vert_or_horiz][direction_number - 1][1]
+                return to_letter(shot_cell[1] + destroying_col), shot_cell[0] + destroying_row + 1
+            else:
+                vert_or_horiz = random.randint(0, 1)
+                direction_number = random.randint(0, 1)
+                destroying_row = numerated_directions[vert_or_horiz][direction_number][0]
+                destroying_col = numerated_directions[vert_or_horiz][direction_number][1]
+                return to_letter(shot_cell[1] + destroying_col), shot_cell[0] + destroying_row + 1
+        else:
+            while True:
+                temp_row = random.randint(0, field_size - 1)
+                temp_column = random.randint(0, field_size - 1)
+                if field[temp_row][temp_column] == Marks.EMPTY:
+                    break
+            return to_letter(temp_column), temp_row + 1
+    elif response == Marks.BOARD:
+        if not vert_or_horiz:
+            vert_or_horiz = random.randint(0, 1)
+            direction_number = random.randint(0, 1)
+        destroying_row += numerated_directions[vert_or_horiz][direction_number][0]
+        destroying_col += numerated_directions[vert_or_horiz][direction_number][1]
+        return to_letter(shot_cell[1] + destroying_col), shot_cell[0] + destroying_row + 1
     else:
-
-    else:
+        if response == Marks.SHOT:
+            destroying_row = False
+            destroying_col = False
+            vert_or_horiz = False
+            direction_number = False
+            destroyed(enemy_field, shot_cell[0], shot_cell[1])
+            shot_cell = False
         while True:
-            row_index = random.randint(0, field_size-1)
-            column_index = random.randint(0, field_size-1)
-            if field[row_index][column_index] == Marks.EMPTY:
+            temp_row = random.randint(0, field_size - 1)
+            temp_column = random.randint(0, field_size - 1)
+            if field[temp_row][temp_column] == Marks.EMPTY:
                 break
-        return to_letter(column_index), row_index + 1
+        return to_letter(temp_column), temp_row + 1
 
 
 print("\nДобро пожаловать в игру \"Морской бой\"!")
@@ -247,26 +235,37 @@ print("Ввод осуществляется по шаблону Буква + Ц
 print("Для вызова помощи введи \"help\".")
 print("Изпользуй латинские буквы для ввода. Приятной игры!")
 
-destroying_row = False
-destroying_col = False
+
 direction_delta = [[-1, 0], [1, 0], [0, -1], [0, 1]]  # ВВЕРХ, ВНИЗ, ВЛЕВО, ВПРАВО
-my_choice_direction = False
+numerated_directions = [[[1, 0], [-1, 0]], [[0, 1], [0, -1]]]
+
 field_size = 10
 my_field = init_field(field_size)
 enemy_field = init_field(field_size)
 generate_ships(my_field)
+
 shot_cell = False
+destroying_row = False
+destroying_col = False
+vert_or_horiz = False
+direction_number = False
+response = False
 
 win = False
 lose = True
-my_turn = True
-if input("Я начинаю первым? Y/N\n> ").upper() == "N":
+my_turn = input("Я начинаю первым? Y/N\n> ").upper()
+if my_turn == "N":
     my_turn = False
-
+else:
+    my_turn = True
 
 while True:
     if my_turn:
-        column_index, row_index = my_choice(enemy_field, shot_cell, destroying_row, destroying_col, response)
+        column_index, row_index = my_choice(
+            enemy_field,
+            shot_cell, destroying_row, destroying_col, vert_or_horiz, direction_number,
+            response
+        )
         print()
         print(f"Мой ход: {column_index}, {row_index}")
         column_index = to_number(column_index)
@@ -274,16 +273,16 @@ while True:
         response = input("Какой результат выстрела?\n> ").upper()
         if response == "МИМО!":
             response = Marks.WATER
+            my_turn = not my_turn
         elif response == "РАНИЛ!":
             response = Marks.BOARD
             if not shot_cell:
-                shot_cell == [row_index, column_index]
+                shot_cell = [row_index, column_index]
         elif response == "ПОТОПИЛ!":
             response = Marks.SHOT
             shot_cell = False
         put_mark(enemy_field, row_index, column_index, response)
         print_field(enemy_field)
-        my_turn = not my_turn
         continue
     else:
         turn = input("\nВведи клетку, по которой был выстрел.\n> ").upper()
@@ -325,21 +324,28 @@ while True:
         continue
 
     if re.match(r"^\w[1-99]", turn):
-        if to_number(turn[0]) not in range(0, field_size+1):
+        if to_number(turn[0]) not in range(0, field_size + 1):
             print("Введи нормальную букву! A B C D E F G H I J. Выбирай!")
             continue
-        if int(turn[1:]) not in range(1, field_size+1):
+        if int(turn[1:]) not in range(1, field_size + 1):
             print("Цифры от 1 до 10! Без запятых!")
             continue
         row_index = int(turn[1:]) - 1
         column_index = to_number(turn[0])
-        shot(my_field, row_index, column_index)
+        put_mark(my_field, row_index, column_index, shot(my_field, row_index, column_index))
+        if my_field[row_index][column_index] == Marks.WATER:
+            my_turn = not my_turn
+            print_field(my_field)
+            continue
+        elif is_destroyed(my_field, row_index, column_index):
+            destroyed(my_field, row_index, column_index)
+            print("ПОТОПИЛ!")
+        else:
+            print("РАНИЛ!")
         print_field(my_field)
     else:
         print("Ничего не понял. Примеры ввода: A4, B7. Буква и цифра. Давай по новой, Миша!")
         continue
-
-    my_turn = not my_turn
 
     for row in my_field:
         if Marks.BOARD in row:

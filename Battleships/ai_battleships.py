@@ -190,15 +190,15 @@ def my_choice(
 ):
     if response == Marks.EMPTY:
         if shot_cell:
-            if destroying_row:
+            if not destroying_row:
                 destroying_row = numerated_directions[vert_or_horiz][direction_number - 1][0]
                 destroying_col = numerated_directions[vert_or_horiz][direction_number - 1][1]
                 return to_letter(shot_cell[1] + destroying_col), shot_cell[0] + destroying_row + 1
             else:
                 vert_or_horiz = random.randint(0, 1)
                 direction_number = random.randint(0, 1)
-                destroying_row = numerated_directions[vert_or_horiz][direction_number][0]
-                destroying_col = numerated_directions[vert_or_horiz][direction_number][1]
+                destroying_row += numerated_directions[vert_or_horiz][direction_number][0]
+                destroying_col += numerated_directions[vert_or_horiz][direction_number][1]
                 return to_letter(shot_cell[1] + destroying_col), shot_cell[0] + destroying_row + 1
         else:
             while True:

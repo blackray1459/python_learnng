@@ -189,7 +189,8 @@ def my_choice(
         response
 ):
     if response == Marks.EMPTY:
-        if shot_cell:
+        if type(shot_cell) != bool:
+            print("Shot cell YES")
             if not destroying_row:
                 destroying_row = numerated_directions[vert_or_horiz][direction_number - 1][0]
                 destroying_col = numerated_directions[vert_or_horiz][direction_number - 1][1]
@@ -201,6 +202,7 @@ def my_choice(
                 destroying_col += numerated_directions[vert_or_horiz][direction_number][1]
                 return to_letter(shot_cell[1] + destroying_col), shot_cell[0] + destroying_row + 1
         else:
+            print("Shot cell NO")
             while True:
                 temp_row = random.randint(0, field_size - 1)
                 temp_column = random.randint(0, field_size - 1)
@@ -208,11 +210,15 @@ def my_choice(
                     break
             return to_letter(temp_column), temp_row + 1
     elif response == Marks.BOARD:
-        if not vert_or_horiz:
+        if type(vert_or_horiz) == bool:
+            print("Choice random direction")
             vert_or_horiz = random.randint(0, 1)
             direction_number = random.randint(0, 1)
+        # if ПРОВЕРКА НА КРАЙ ПОЛЯ
         destroying_row += numerated_directions[vert_or_horiz][direction_number][0]
         destroying_col += numerated_directions[vert_or_horiz][direction_number][1]
+        print(f"shot_cell is {shot_cell}, vert_or_horiz is {vert_or_horiz}, direction_number is {direction_number}")
+        print(f"destroying_row is {destroying_row}, destroying_col is {destroying_col}")
         return to_letter(shot_cell[1] + destroying_col), shot_cell[0] + destroying_row + 1
     else:
         if response == Marks.SHOT:
@@ -276,7 +282,7 @@ while True:
             my_turn = not my_turn
         elif response == "РАНИЛ!":
             response = Marks.BOARD
-            if not shot_cell:
+            if type(shot_cell) == bool:
                 shot_cell = [row_index, column_index]
         elif response == "ПОТОПИЛ!":
             response = Marks.SHOT

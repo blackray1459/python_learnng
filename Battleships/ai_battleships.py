@@ -184,23 +184,21 @@ def shot(field, row_index, column_index):  # РЕГИСТРАЦИЯ ВЫСТРЕ
 
 
 def my_choice(
-        field,
-        shot_cell, destroying_row, destroying_col, vert_or_horiz, direction_number,
+        field, field_size,
+        first_shot_cell, destroying_cell, vert_or_horiz, direction_number,
         response
 ):
     if response == Marks.EMPTY:
-        if type(shot_cell) != bool:
+        if first_shot_cell[0] == -1:
             print("Shot cell YES")
-            if not destroying_row:
-                destroying_row = numerated_directions[vert_or_horiz][direction_number - 1][0]
-                destroying_col = numerated_directions[vert_or_horiz][direction_number - 1][1]
-                return to_letter(shot_cell[1] + destroying_col), shot_cell[0] + destroying_row + 1
+            if destroying_cell[0] < 0:
+                destroying_cell = numerated_directions[vert_or_horiz][direction_number - 1]
+                return to_letter(first_shot_cell[1] + destroying_cell[1]), first_shot_cell[0] + destroying_cell[0] + 1, destroying_cell, vert_or_horiz, direction_number
             else:
                 vert_or_horiz = random.randint(0, 1)
                 direction_number = random.randint(0, 1)
-                destroying_row += numerated_directions[vert_or_horiz][direction_number][0]
-                destroying_col += numerated_directions[vert_or_horiz][direction_number][1]
-                return to_letter(shot_cell[1] + destroying_col), shot_cell[0] + destroying_row + 1
+                destroying_cell = [x+y for x, y in zip(destroying_cell, numerated_directions[vert_or_horiz][direction_number])]
+                return to_letter(first_shot_cell[1] + destroying_cell[1]), first_shot_cell[0] + destroying_cell[0] + 1, destroying_cell, vert_or_horiz, direction_number
         else:
             print("Shot cell NO")
             while True:
@@ -208,32 +206,38 @@ def my_choice(
                 temp_column = random.randint(0, field_size - 1)
                 if field[temp_row][temp_column] == Marks.EMPTY:
                     break
-            return to_letter(temp_column), temp_row + 1
+            return to_letter(temp_column), temp_row + 1, destroying_cell, vert_or_horiz, direction_number
     elif response == Marks.BOARD:
-        if type(vert_or_horiz) == bool:
+        if vert_or_horiz == 2:
             print("Choice random direction")
-            vert_or_horiz = random.randint(0, 1)
-            direction_number = random.randint(0, 1)
-        # if ПРОВЕРКА НА КРАЙ ПОЛЯ
-        destroying_row += numerated_directions[vert_or_horiz][direction_number][0]
-        destroying_col += numerated_directions[vert_or_horiz][direction_number][1]
-        print(f"shot_cell is {shot_cell}, vert_or_horiz is {vert_or_horiz}, direction_number is {direction_number}")
-        print(f"destroying_row is {destroying_row}, destroying_col is {destroying_col}")
-        return to_letter(shot_cell[1] + destroying_col), shot_cell[0] + destroying_row + 1
+            while True:
+                vert_or_horiz = random.randint(0, 1)
+                direction_number = random.randint(0, 1)
+                destroying_cell = [x+y for x, y in zip(first_shot_cell, numerated_directions[vert_or_horiz][direction_number])]
+                if 0 <= destroying_cell[0] < field_size + 1 or 0 < destroying_cell[0] < field_size + 1:
+                    break
+        else:
+            destroying_cell = [x + y for x, y in
+                               zip(destroying_cell, numerated_directions[vert_or_horiz][direction_number])]
+            if 0 < destroying_cell[0] < field_size + 1 or 0 < destroying_cell[0] < field_size + 1:
+                direction_number -= 1
+                destroying_cell = [x + y for x, y in
+                                   zip(first_shot_cell, numerated_directions[vert_or_horiz][direction_number])]
+        print(f"shot_cell is {first_shot_cell}, vert_or_horiz is {vert_or_horiz}, direction_number is {direction_number}")
+        print(f"destroying_row is {destroying_cell[0]}, destroying_col is {destroying_cell[1]}")
+        return to_letter(destroying_cell[1]), destroying_cell[0] + 1, destroying_cell, vert_or_horiz, direction_number
     else:
         if response == Marks.SHOT:
-            destroying_row = False
-            destroying_col = False
-            vert_or_horiz = False
-            direction_number = False
-            destroyed(enemy_field, shot_cell[0], shot_cell[1])
-            shot_cell = False
+            destroying_cell = [-1, -1]
+            vert_or_horiz = 2
+            direction_number = 2
+            destroyed(enemy_field, first_shot_cell[0], first_shot_cell[1])
         while True:
             temp_row = random.randint(0, field_size - 1)
             temp_column = random.randint(0, field_size - 1)
             if field[temp_row][temp_column] == Marks.EMPTY:
                 break
-        return to_letter(temp_column), temp_row + 1
+        return to_letter(temp_column), temp_row + 1, destroying_cell, vert_or_horiz, direction_number
 
 
 print("\nДобро пожаловать в игру \"Морской бой\"!")
@@ -250,11 +254,10 @@ my_field = init_field(field_size)
 enemy_field = init_field(field_size)
 generate_ships(my_field)
 
-shot_cell = False
-destroying_row = False
-destroying_col = False
-vert_or_horiz = False
-direction_number = False
+first_shot_cell = [-1, -1]
+destroying_cell = [-1, -1]
+vert_or_horiz = 2
+direction_number = 2
 response = False
 
 win = False
@@ -267,9 +270,10 @@ else:
 
 while True:
     if my_turn:
-        column_index, row_index = my_choice(
-            enemy_field,
-            shot_cell, destroying_row, destroying_col, vert_or_horiz, direction_number,
+        print(vert_or_horiz)
+        column_index, row_index, destroying_cell, vert_or_horiz, direction_number = my_choice(
+            enemy_field, field_size,
+            first_shot_cell, destroying_cell, vert_or_horiz, direction_number,
             response
         )
         print()
@@ -282,11 +286,12 @@ while True:
             my_turn = not my_turn
         elif response == "РАНИЛ!":
             response = Marks.BOARD
-            if type(shot_cell) == bool:
-                shot_cell = [row_index, column_index]
+            print(type(vert_or_horiz))
+            if first_shot_cell[0] == -1:
+                first_shot_cell = [row_index, column_index]
         elif response == "ПОТОПИЛ!":
             response = Marks.SHOT
-            shot_cell = False
+            first_shot_cell = [-1, -1]
         put_mark(enemy_field, row_index, column_index, response)
         print_field(enemy_field)
         continue

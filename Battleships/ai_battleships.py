@@ -189,7 +189,7 @@ def my_choice(
         response
 ):
     if response == Marks.EMPTY:
-        if first_shot_cell[0] == -1:
+        if first_shot_cell[0] != -1:
             print("Shot cell YES")
             if destroying_cell[0] < 0:
                 destroying_cell = numerated_directions[vert_or_horiz][direction_number - 1]
@@ -219,7 +219,7 @@ def my_choice(
         else:
             destroying_cell = [x + y for x, y in
                                zip(destroying_cell, numerated_directions[vert_or_horiz][direction_number])]
-            if 0 < destroying_cell[0] < field_size + 1 or 0 < destroying_cell[0] < field_size + 1:
+            if not 0 < destroying_cell[0] < field_size + 1 or not 0 < destroying_cell[1] < field_size + 1:
                 direction_number -= 1
                 destroying_cell = [x + y for x, y in
                                    zip(first_shot_cell, numerated_directions[vert_or_horiz][direction_number])]
@@ -270,7 +270,8 @@ else:
 
 while True:
     if my_turn:
-        print(vert_or_horiz)
+        print(f"vert_or_horiz is {vert_or_horiz}")
+        print(f"first_shot_cell is {first_shot_cell}")
         column_index, row_index, destroying_cell, vert_or_horiz, direction_number = my_choice(
             enemy_field, field_size,
             first_shot_cell, destroying_cell, vert_or_horiz, direction_number,
@@ -286,7 +287,6 @@ while True:
             my_turn = not my_turn
         elif response == "РАНИЛ!":
             response = Marks.BOARD
-            print(type(vert_or_horiz))
             if first_shot_cell[0] == -1:
                 first_shot_cell = [row_index, column_index]
         elif response == "ПОТОПИЛ!":

@@ -191,12 +191,28 @@ def my_choice(
     if response == Marks.EMPTY:
         if first_shot_cell[0] != -1:
             print("Shot cell YES")
-            if destroying_cell[0] < 0:
-                destroying_cell = numerated_directions[vert_or_horiz][direction_number - 1]
-                return to_letter(first_shot_cell[1] + destroying_cell[1]), first_shot_cell[0] + destroying_cell[0] + 1, destroying_cell, vert_or_horiz, direction_number
+            if vert_or_horiz == 2:
+                print("Choice random direction")
+                while True:
+                    vert_or_horiz = random.randint(0, 1)
+                    direction_number = random.randint(0, 1)
+                    destroying_cell = [x + y for x, y in
+                                       zip(first_shot_cell, numerated_directions[vert_or_horiz][direction_number])]
+                    if 0 <= destroying_cell[0] < field_size + 1 or 0 < destroying_cell[0] < field_size + 1:
+                        break
+                return to_letter(destroying_cell[1]), destroying_cell[0] + 1, destroying_cell, vert_or_horiz,\
+                       direction_number
             else:
-                vert_or_horiz = random.randint(0, 1)
-                direction_number = random.randint(0, 1)
+                direction_number -= 1
+                if direction_number == -2:
+                    vert_or_horiz -= 1
+                    direction_number = random.randint(0,1)
+                destroying_cell = [x + y for x, y in
+                                   zip(destroying_cell, numerated_directions[vert_or_horiz][direction_number])]
+                if not 0 < destroying_cell[0] < field_size + 1 or not 0 < destroying_cell[1] < field_size + 1:
+                    direction_number -= 1
+                    destroying_cell = [x + y for x, y in
+                                       zip(first_shot_cell, numerated_directions[vert_or_horiz][direction_number])]
                 destroying_cell = [x+y for x, y in zip(destroying_cell, numerated_directions[vert_or_horiz][direction_number])]
                 return to_letter(first_shot_cell[1] + destroying_cell[1]), first_shot_cell[0] + destroying_cell[0] + 1, destroying_cell, vert_or_horiz, direction_number
         else:

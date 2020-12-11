@@ -188,11 +188,11 @@ def my_choice(
         first_shot_cell, destroying_cell, vert_or_horiz, direction_number,
         response
 ):
-    if response == Marks.EMPTY:
+    if response == Marks.WATER:
         if first_shot_cell[0] != -1:
             print("Shot cell YES")
             if vert_or_horiz == 2:
-                print("Choice random direction")
+                print("Choose random direction")
                 while True:
                     vert_or_horiz = random.randint(0, 1)
                     direction_number = random.randint(0, 1)
@@ -204,17 +204,20 @@ def my_choice(
                        direction_number
             else:
                 direction_number -= 1
-                if direction_number == -2:
-                    vert_or_horiz -= 1
-                    direction_number = random.randint(0,1)
                 destroying_cell = [x + y for x, y in
-                                   zip(destroying_cell, numerated_directions[vert_or_horiz][direction_number])]
+                                   zip(first_shot_cell, numerated_directions[vert_or_horiz][direction_number])]
+                if direction_number == -2 or field[destroying_cell[0]][destroying_cell[1]] != Marks.EMPTYY:
+                    print("Change vert/horiz")
+                    vert_or_horiz -= 1
+                    direction_number = random.randint(0, 1)
+                destroying_cell = [x + y for x, y in
+                                   zip(first_shot_cell, numerated_directions[vert_or_horiz][direction_number])]
                 if not 0 < destroying_cell[0] < field_size + 1 or not 0 < destroying_cell[1] < field_size + 1:
                     direction_number -= 1
                     destroying_cell = [x + y for x, y in
                                        zip(first_shot_cell, numerated_directions[vert_or_horiz][direction_number])]
-                destroying_cell = [x+y for x, y in zip(destroying_cell, numerated_directions[vert_or_horiz][direction_number])]
-                return to_letter(first_shot_cell[1] + destroying_cell[1]), first_shot_cell[0] + destroying_cell[0] + 1, destroying_cell, vert_or_horiz, direction_number
+                return to_letter(destroying_cell[1]), destroying_cell[0] + 1, destroying_cell, vert_or_horiz, \
+                       direction_number
         else:
             print("Shot cell NO")
             while True:
@@ -310,6 +313,7 @@ while True:
             first_shot_cell = [-1, -1]
         put_mark(enemy_field, row_index, column_index, response)
         print_field(enemy_field)
+        print()
         continue
     else:
         turn = input("\nВведи клетку, по которой был выстрел.\n> ").upper()

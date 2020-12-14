@@ -269,6 +269,7 @@ field_size = 10
 my_field = init_field(field_size)
 enemy_field = init_field(field_size)
 generate_ships(my_field)
+empty_enemy_cells = 0
 
 first_shot_cell = [-1, -1]
 destroying_cell = [-1, -1]
@@ -380,17 +381,17 @@ while True:
             break
 
     destroyed_boards = 0
+    empty_enemy_cells = 0
     for row in enemy_field:
         destroyed_boards += row.count(Marks.SHOT)
+        empty_enemy_cells += row.count(Marks.EMPTY)
 
     if destroyed_boards == 20:
         print("Победа! Флот врага уничтожен!")
         break
-
-    for row in my_field:
-        if Marks.BOARD in row:
-            lose = False
-            break
+    elif empty_enemy_cells == 0:
+        print("Победа! Поле врага зачищено!")
+        break
 
     if lose:
         print("Проигрыш! Дружественный флот уничтожен!")

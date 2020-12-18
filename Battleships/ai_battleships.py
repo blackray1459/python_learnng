@@ -46,7 +46,9 @@ def print_field(field):
         print(formatted_row)
 
 
-def generate_ships(field):
+def generate_ships(field, seed=0):
+    if seed != 0:
+        random.seed(seed)
     for ship_size in range(4):
         ship_size += 1
         for i in range(5 - ship_size):
@@ -271,7 +273,7 @@ numerated_directions = [[[1, 0], [-1, 0]], [[0, 1], [0, -1]]]
 field_size = 10
 my_field = init_field(field_size)
 enemy_field = init_field(field_size)
-generate_ships(my_field)
+generate_ships(my_field, 1)
 empty_enemy_cells = 0
 
 first_shot_cell = [-1, -1]
@@ -279,7 +281,9 @@ destroying_cell = [-1, -1]
 vert_or_horiz = 2
 direction_number = 2
 response = False
+line_reading = 0
 
+file_using = True
 win = False
 lose = True
 my_turn = input("Я начинаю первым? Y/N\n> ").upper()
@@ -287,7 +291,8 @@ if my_turn == "N":
     my_turn = False
 else:
     my_turn = True
-
+if file_using:
+    f1 = open("move_list.txt", "r")
 while True:
     if my_turn:
         print(f"vert_or_horiz is {vert_or_horiz}")
@@ -400,3 +405,6 @@ while True:
     if lose:
         print("Проигрыш! Дружественный флот уничтожен!")
         break
+
+if file_using:
+    f1.close()
